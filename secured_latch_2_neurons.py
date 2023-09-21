@@ -23,12 +23,20 @@ if __name__ == '__main__':
     src_set = sim.Population(1, sim.SpikeSourceArray(spike_times=set_times))
     src_reset = sim.Population(1, sim.SpikeSourceArray(spike_times=reset_times))
 
+    and_pop = sim.Population(1, sim.IF_curr_exp(**neuron_params), initial_values={'v': neuron_params["v_rest"]}, label="and")
+    delay_pop = sim.Population(1, sim.IF_curr_exp(**neuron_params), initial_values={'v': neuron_params["v_rest"]}, label="delay")
     latch_pop = sim.Population(2, sim.IF_curr_exp(**neuron_params), initial_values={'v': neuron_params["v_rest"]}, label="latch")
 
     # - Connections -
     # Inputs
-    sim.Projection(src_set, sim.PopulationView(latch_pop, [0]), sim.OneToOneConnector(), std_conn)
-    sim.Projection(src_reset, latch_pop, sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
+    sim.Projection(src_set, and_pop, sim.OneToOneConnector(), std_conn)
+    sim.Projection(src_reset, delay_pop, sim.OneToOneConnector(), std_conn)
+
+    # Interconnections
+    sim.Projection(and_pop, and_pop, sim.OneToOneConnector(), std_conn, receptor_type="inhibitory")
+    sim.Projection(and_pop, sim.PopulationView(latch_pop, [0]), sim.OneToOneConnector(), std_conn)
+    sim.Projection(delay_pop, latch_pop, sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
+    sim.Projection(latch_pop, and_pop, sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
 
     # Recurrence
     sim.Projection(sim.PopulationView(latch_pop, [0]), sim.PopulationView(latch_pop, [1]), sim.OneToOneConnector(), std_conn)
@@ -93,11 +101,3 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.savefig("experiments/" + filename + '.png', transparent=False, facecolor='white', edgecolor='black')
     plt.show()
-
-    '''# Voltage
-    plt.title('Voltage response')
-    for i in range(len(output_data.analogsignals)):
-        plt.plot(output_data.analogsignals[i].times, output_data.analogsignals[i], '.', markersize=1, linewidth=1)
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Membrane potential (mV)')
-    plt.show()'''
