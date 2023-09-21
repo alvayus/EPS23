@@ -1,9 +1,0 @@
-Vertex: SpikeSourceArrayVertex_1
-    Partition: SPIKE, Routing Info: KeyAndMask:0x0:0xffffffe0
-    Machine Vertex: SpikeSourceArrayVertex_1(0:0), Slice: (0:0), Routing Info: KeyAndMask:0x0:0xffffffe0
-Vertex: latch with 2 atoms
-    Partition: SPIKE, Routing Info: KeyAndMask:0x40:0xffffffe0
-    Machine Vertex: latch(0:1), Slice: (0:1), Routing Info: KeyAndMask:0x40:0xffffffe0
-Vertex: SpikeSourceArrayVertex_2
-    Partition: SPIKE, Routing Info: KeyAndMask:0x20:0xffffffe0
-    Machine Vertex: SpikeSourceArrayVertex_2(0:0), Slice: (0:0), Routing Info: KeyAndMask:0x20:0xffffffe0
