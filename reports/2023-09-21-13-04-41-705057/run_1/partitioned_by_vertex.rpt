@@ -1,0 +1,23 @@
+        Partitioning Information by Vertex
+        ===============================
+
+Generated: Thu Sep 21 13:04:41 2023 for target machine '192.168.1.253'
+
+**** Vertex: 'SpikeSourceArrayVertex_1'
+Model: SpikeSourceArrayVertex
+Pop size: 1
+Machine Vertices:
+  Slice (0:0)    Vertex SpikeSourceArrayVertex_1(0:0)
+
+**** Vertex: 'SpikeSourceArrayVertex_2'
+Model: SpikeSourceArrayVertex
+Pop size: 1
+Machine Vertices:
+  Slice (0:0)    Vertex SpikeSourceArrayVertex_2(0:0)
+
+**** Vertex: 'latch'
+Model: AbstractPopulationVertex
+Pop size: 2
+Machine Vertices:
+  Slice (0:1)    Vertex latch(0:1)
+
