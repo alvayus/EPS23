@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     # -- Network architecture --
     # - Populations -
-    set_times = [10.0, 40.0, 50.0, 51.0, 80.0, 81.0, 120.0]
+    set_times = [10.0, 40.0, 49.0, 50.0, 51.0, 52.0, 80.0, 81.0, 120.0]
     reset_times = [20.0, 60.0, 100.0]
     src_set = sim.Population(1, sim.SpikeSourceArray(spike_times=set_times))
     src_reset = sim.Population(1, sim.SpikeSourceArray(spike_times=reset_times))
