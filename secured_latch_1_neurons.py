@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
     # -- Network architecture --
     # - Populations -
-    set_times = [10.0, 40.0, 49.0, 50.0, 51.0, 52.0, 80.0, 81.0, 120.0]
+    set_times = [10.0, 40.0, 51.0, 80.0, 81.0, 120.0]
     reset_times = [20.0, 60.0, 100.0]
     src_set = sim.Population(1, sim.SpikeSourceArray(spike_times=set_times))
     src_reset = sim.Population(1, sim.SpikeSourceArray(spike_times=reset_times))
@@ -91,6 +91,7 @@ if __name__ == '__main__':
     # Inputs
     axs[1].plot(set_times, [1] * len(set_times), 'o', markersize=0.5, color='teal')
     axs[1].plot(reset_times, [0] * len(reset_times), 'o', markersize=0.5, color='indianred')
+    axs[1].plot([51.0, 81.0], [1] * 2, 'o', markersize=0.5, color='sandybrown')
     axs[1].set_xlim([0, global_params["sim_time"]])
     axs[1].set_ylim([-1, 2])
     axs[1].set_yticks([0, 1], ["Set", "Reset"])
