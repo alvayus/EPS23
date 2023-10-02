@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     # -- Network architecture --
     # - Spike injectors -
-    count_times = range(10, int(global_params["sim_time"]), 10)
+    count_times = range(10, int(global_params["sim_time"] - 20), 1)
     src_count = sim.Population(1, sim.SpikeSourceArray(spike_times=count_times))
 
     # - Populations -
@@ -35,10 +35,11 @@ if __name__ == '__main__':
         and_array.append(and_pop)
 
     # - Connections -
-    # Count signal (Bit 0)
+    # Count signal (Bit 0) - Switch
     sim.Projection(src_count, sim.PopulationView(switch_array[0], [0]), sim.OneToOneConnector(), std_conn)
     sim.Projection(src_count, sim.PopulationView(switch_array[0], [1, 2]), sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
 
+    # Count signal (Bit 0) - AND
     sim.Projection(src_count, sim.PopulationView(and_array[0], [0]), sim.OneToOneConnector(), std_conn)
     sim.Projection(src_count, sim.PopulationView(and_array[0], [2]), sim.OneToOneConnector(), std_conn)
     sim.Projection(sim.PopulationView(and_array[0], [2]), sim.PopulationView(and_array[0], [1]), sim.OneToOneConnector(), std_conn)
@@ -54,19 +55,20 @@ if __name__ == '__main__':
         sim.Projection(sim.PopulationView(switch_array[i], [1]), sim.PopulationView(switch_array[i], [2]), sim.OneToOneConnector(), std_conn)
         sim.Projection(sim.PopulationView(switch_array[i], [2]), sim.PopulationView(switch_array[i], [1]), sim.OneToOneConnector(), std_conn)
 
-    # Switch - AND
+    # AND
     for i in range(n_bits - 1):
         sim.Projection(switch_array[i], sim.PopulationView(and_array[i], [0]), sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
-
-    # Internal (AND)
-    for i in range(n_bits - 1):
         sim.Projection(sim.PopulationView(and_array[i], [0]), sim.PopulationView(and_array[i], [1]), sim.OneToOneConnector(), std_conn, receptor_type="inhibitory")
 
-        # Count signal (Bit 1 ... n)
+        # Next AND
         if i < n_bits - 2:
             sim.Projection(sim.PopulationView(and_array[i], [1]), sim.PopulationView(and_array[i+1], [0]), sim.OneToOneConnector(), std_conn)
             sim.Projection(sim.PopulationView(and_array[i], [1]), sim.PopulationView(and_array[i+1], [2]), sim.OneToOneConnector(), std_conn)
             sim.Projection(sim.PopulationView(and_array[i+1], [2]), sim.PopulationView(and_array[i+1], [1]), sim.OneToOneConnector(), std_conn)
+
+        # Next Switch
+        sim.Projection(sim.PopulationView(and_array[i], [1]), sim.PopulationView(switch_array[i + 1], [0]), sim.OneToOneConnector(), std_conn)
+        sim.Projection(sim.PopulationView(and_array[i], [1]), sim.PopulationView(switch_array[i + 1], [1, 2]), sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
 
     # -- Recording --
     for i in range(n_bits):
@@ -85,7 +87,7 @@ if __name__ == '__main__':
     sim.end()
 
     # --- Saving test ---
-    save_array = [switch_data, and_data]
+    save_array = [switch_data, and_data, count_times]
     test_name = os.path.basename(__file__).split('.')[0]
 
     cwd = os.getcwd()
@@ -101,12 +103,14 @@ if __name__ == '__main__':
     with open("experiments/" + filename + '.pickle', 'wb') as handle:
         pickle.dump(save_array, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    print(len(count_times))  # Number of overflows * Counter capacity + Last number
+
     # --- Saving plot ---
     plt.rcParams['figure.dpi'] = 400
     plt.rcParams['font.size'] = '4'
     plt.rcParams["figure.figsize"] = (4, 1.5)
 
-    fig, axs = plt.subplots(2, 1)
+    fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
     fig.suptitle('Spiking response')
 
     # Spikes
@@ -117,15 +121,17 @@ if __name__ == '__main__':
             axs[0].plot(segment.spiketrains[i], [n_id] * len(segment.spiketrains[i]), 'o', markersize=0.5, color='darkmagenta')
             n_id += 1
 
-    for segment in and_data:
+    '''for segment in and_data:
         n_tmp = len(segment.spiketrains)
         for i in range(n_tmp):
             axs[0].plot(segment.spiketrains[i], [n_id] * len(segment.spiketrains[i]), 'o', markersize=0.5, color='darkmagenta')
-            n_id += 1
+            n_id += 1'''
 
     axs[0].set_xlim([0, global_params["sim_time"]])
-    axs[0].set_ylim([-1, 3 * n_bits + 3 * (n_bits - 1)])
-    axs[0].set_yticks(range(3 * n_bits + 3 * (n_bits - 1)))
+    '''axs[0].set_ylim([-1, 3 * n_bits + 3 * (n_bits - 1)])
+    axs[0].set_yticks(range(3 * n_bits + 3 * (n_bits - 1)))'''
+    axs[0].set_ylim([-1, 3 * n_bits])
+    axs[0].set_yticks(range(0, 3 * n_bits, 3))
     axs[0].set_xlabel('Time (ms)')
     axs[0].set_ylabel('Neuron IDs')
 
@@ -133,9 +139,9 @@ if __name__ == '__main__':
     axs[1].plot(count_times, [0] * len(count_times), 'o', markersize=0.5, color='orange')
     axs[1].set_xlim([0, global_params["sim_time"]])
     axs[1].set_ylim([-1, 1])
-    axs[1].set_yticks([0], ["Switch"])
+    axs[1].set_yticks([0])
     axs[1].set_xlabel('Time (ms)')
-    axs[1].set_ylabel('Spike generators')
+    axs[1].set_ylabel('Spike generator')
 
     plt.tight_layout()
     plt.savefig("experiments/" + filename + '.png', transparent=False, facecolor='white', edgecolor='black')
