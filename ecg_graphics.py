@@ -2,7 +2,7 @@ import wfdb
 import matplotlib.pyplot as plt
 import numpy as np
 
-n_secs = 5
+n_secs = 2
 freq = 360
 
 record = wfdb.rdrecord('data/100', sampto=n_secs*freq)
@@ -58,6 +58,7 @@ axs[1].plot(on_spikes, [2] * len(on_spikes), marker='|', linestyle=None, color='
 axs[1].plot(off_spikes, [1] * len(off_spikes), marker='|', linestyle=None, color='palevioletred')
 axs[1].set_xlim([0, n_secs])
 axs[1].set_ylim([0, 3])
+axs[1].set_yticks([1, 2], labels=["OFF", "ON"])
 axs[1].set_xlabel('Time (s)')
 axs[1].set_ylabel('Delta mod.')
 

@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 # Neuron parameters
 global_params = {"min_delay": 1.0, "sim_time": 150.0}
 neuron_params = {"cm": 0.1, "tau_m": 0.1, "tau_refrac": 0.0, "tau_syn_E": 0.1, "tau_syn_I": 0.1, "v_rest": -65.0, "v_reset": -65.0, "v_thresh": -64.91}
-
+oc_params = {"cm": 1.0, "tau_m": 1.0, "tau_refrac": 75.0, "tau_syn_E": 10.0, "tau_syn_I": 10.0, "v_rest": -65.0, "v_reset": -65.0, "v_thresh": -63.9}
 
 if __name__ == '__main__':
     # Read sample
@@ -18,9 +18,9 @@ if __name__ == '__main__':
     freq = 360
 
     # Comprobación
-    record = wfdb.rdrecord('data/100', sampto=n_secs * freq)
+    '''record = wfdb.rdrecord('data/100', sampto=n_secs * freq)
     ann = wfdb.rdann('data/100', 'atr', sampto=n_secs * freq)
-    wfdb.plot_wfdb(record, annotation=ann)
+    wfdb.plot_wfdb(record, annotation=ann)'''
 
     # Carga de los datos
     signals, fields = wfdb.rdsamp('data/100', sampto=n_secs * freq)
@@ -49,6 +49,7 @@ if __name__ == '__main__':
     # Secs to milisecs
     on_spikes = np.array(on_spikes) * 1000
     off_spikes = np.array(off_spikes) * 1000
+    all_spikes = np.sort(np.concatenate((on_spikes, off_spikes)))
 
     # --- Simulation ---
     sim.setup(global_params["min_delay"])
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 
     # -- Network architecture --
     # - Spike injectors -
-    src_count = sim.Population(1, sim.SpikeSourceArray(spike_times=on_spikes))
+    src_count = sim.Population(1, sim.SpikeSourceArray(spike_times=all_spikes))
 
     # - Populations -
     switch_array = []
@@ -71,7 +72,8 @@ if __name__ == '__main__':
         switch_array.append(switch_pop)
         and_array.append(and_pop)
 
-    oc_pop = sim.Population(1, sim.IF_curr_exp(**neuron_params), initial_values={'v': neuron_params["v_rest"]}, label="oc")  # Overflow count
+    oc_pop_v1 = sim.Population(1, sim.IF_curr_exp(**neuron_params), initial_values={'v': neuron_params["v_rest"]}, label="oc")  # Overflow count
+    oc_pop_v2 = sim.Population(1, sim.IF_curr_exp(**oc_params), initial_values={'v': oc_params["v_rest"]}, label="oc")  # Overflow count
 
     # - Connections -
     # Count signal (Bit 0) - Switch
@@ -110,14 +112,16 @@ if __name__ == '__main__':
             sim.Projection(sim.PopulationView(and_array[i], [1]), sim.PopulationView(switch_array[i + 1], [1, 2]), sim.AllToAllConnector(), std_conn, receptor_type="inhibitory")
 
     # ECG COUNTING OVERFLOW
-    sim.Projection(sim.PopulationView(and_array[-1], [1]), oc_pop, sim.OneToOneConnector(), std_conn)
+    sim.Projection(sim.PopulationView(and_array[-1], [1]), oc_pop_v1, sim.OneToOneConnector(), std_conn)
+    sim.Projection(sim.PopulationView(and_array[-1], [1]), oc_pop_v2, sim.OneToOneConnector(), std_conn)
 
     # -- Recording --
     for i in range(n_bits):
         switch_array[i].record(["spikes"])
     for i in range(n_bits - 1):
         and_array[i].record(["spikes"])
-    oc_pop.record(["spikes"])
+    oc_pop_v1.record(["spikes"])
+    oc_pop_v2.record(["spikes"])
 
     # -- Run simulation --
     sim.run(global_params["sim_time"])
@@ -125,7 +129,7 @@ if __name__ == '__main__':
     # -- Get data from the simulation --
     switch_data = [switch_array[i].get_data().segments[0] for i in range(n_bits)]
     and_data = [and_array[i].get_data().segments[0] for i in range(n_bits - 1)]
-    oc_data = oc_pop.get_data().segments[0]
+    oc_data = [oc_pop_v1.get_data().segments[0], oc_pop_v2.get_data().segments[0]]
 
     # - End simulation -
     sim.end()
@@ -150,13 +154,18 @@ if __name__ == '__main__':
     # --- Saving plot ---
     plt.rcParams['figure.dpi'] = 400
     plt.rcParams['font.size'] = '4'
-    plt.rcParams["figure.figsize"] = (4, 1.5)
+    plt.rcParams["figure.figsize"] = (4, 2)
 
-    fig, axs = plt.subplots(3, 1, gridspec_kw={'height_ratios': [1, 3, 1]})
+    fig, axs = plt.subplots(3, 1, gridspec_kw={'height_ratios': [2, 5, 1]})
     fig.suptitle('Spiking response')
 
     # Overflow counter
-    axs[0].plot(oc_data.spiketrains[0], [0] * len(oc_data.spiketrains[0]), 'o', markersize=0.5, color='darkmagenta')
+    axs[0].plot(oc_data[0].spiketrains[0], [0] * len(oc_data[0].spiketrains[0]), 'o', markersize=0.5, color='darkmagenta')
+    axs[0].plot(oc_data[1].spiketrains[0], [1] * len(oc_data[1].spiketrains[0]), 'o', markersize=0.5, color='palevioletred')
+    axs[0].set_xlim([0, global_params["sim_time"]])
+    axs[0].set_ylim([-1, 2])
+    axs[0].set_yticks([0, 1], labels=["OC", "OC adj."])
+    axs[0].set_xlabel('Time (ms)')
 
     # Counter neurons
     n_id = 0
@@ -170,15 +179,15 @@ if __name__ == '__main__':
     axs[1].set_ylim([-1, 3 * n_bits])
     axs[1].set_yticks(range(0, 3 * n_bits, 3))
     axs[1].set_xlabel('Time (ms)')
-    axs[1].set_ylabel('Neuron IDs')
+    axs[1].set_ylabel('Neurons\n(Counter)')
 
     # Inputs
-    axs[2].plot(on_spikes, [0] * len(on_spikes), 'o', markersize=0.5, color='orange')
+    axs[2].plot(all_spikes, [0] * len(all_spikes), 'o', markersize=0.5, color='orange')
     axs[2].set_xlim([0, global_params["sim_time"]])
     axs[2].set_ylim([-1, 1])
     axs[2].set_yticks([0])
     axs[2].set_xlabel('Time (ms)')
-    axs[2].set_ylabel('Spike generator')
+    axs[2].set_ylabel('Neurons\n(Spike generator)')
 
     plt.tight_layout()
     plt.savefig("experiments/" + filename + '.png', transparent=False, facecolor='white', edgecolor='black')
