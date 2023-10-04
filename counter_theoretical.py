@@ -36,6 +36,7 @@ if __name__ == '__main__':
     times = [[] for i in range(n_bits)]
 
     count = 0
+    count_bin = None
     for t in count_times:
         count = (count + 1) % (2 ** n_bits)
         count_bin = ("{:0" + str(n_bits) + "b}").format(count)
@@ -44,6 +45,11 @@ if __name__ == '__main__':
         for j in range(len(count_bin)):
             if count_bin[j] == '1':
                 times[4 - j - 1].append(t)
+
+    for i in range(count_times[-1], int(global_params["sim_time"])):
+        for j in range(len(count_bin)):
+            if count_bin[j] == '1':
+                times[4 - j - 1].append(i)
 
     for i in range(len(times)):
         axs[0].plot(times[i], [3 * i] * len(times[i]), 'o', markersize=0.5, color='orange')
