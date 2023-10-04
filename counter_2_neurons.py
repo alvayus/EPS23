@@ -20,6 +20,7 @@ if __name__ == '__main__':
     # -- Network architecture --
     # - Spike injectors -
     count_times = range(10, int(global_params["sim_time"] - 20), 1)
+    #count_times = range(10, 15, 1)
     src_count = sim.Population(1, sim.SpikeSourceArray(spike_times=count_times))
 
     # - Populations -
