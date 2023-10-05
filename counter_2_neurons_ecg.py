@@ -9,11 +9,11 @@ from matplotlib import pyplot as plt
 # Neuron parameters
 global_params = {"min_delay": 1.0, "sim_time": 150.0}
 neuron_params = {"cm": 0.1, "tau_m": 0.1, "tau_refrac": 0.0, "tau_syn_E": 0.1, "tau_syn_I": 0.1, "v_rest": -65.0, "v_reset": -65.0, "v_thresh": -64.91}
-oc_params = {"cm": 1.0, "tau_m": 1.0, "tau_refrac": 75.0, "tau_syn_E": 10.0, "tau_syn_I": 10.0, "v_rest": -65.0, "v_reset": -65.0, "v_thresh": -63.9}
+oc_params = {"cm": 1.0, "tau_m": 10.0, "tau_refrac": 75.0, "tau_syn_E": 40.0, "v_rest": -65.0, "v_reset": -65.0, "v_thresh": -43.0}  # 1 QRS each 150 ms if f = 400 pulse/min
 
 if __name__ == '__main__':
     # Read sample
-    n_secs = 2
+    n_secs = 5
     global_params["sim_time"] = float(n_secs * 1000)
     freq = 360
 
@@ -23,18 +23,18 @@ if __name__ == '__main__':
     wfdb.plot_wfdb(record, annotation=ann)'''
 
     # Carga de los datos
-    signals, fields = wfdb.rdsamp('data/100', sampto=n_secs * freq)
+    signals, fields = wfdb.rdsamp('data/232', sampto=n_secs * freq)
 
     # Delta modulator
-    v5 = signals[:, 1]
+    mlii = signals[:, 0]
 
     dc = 0
-    delta = 0.01
+    delta = 0.03
     on_spikes = []
     off_spikes = []
 
-    for i in range(len(v5)):
-        current_sample = v5[i]
+    for i in range(len(mlii)):
+        current_sample = mlii[i]
 
         if current_sample > dc + delta:
             dc = current_sample
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     sim.end()
 
     # --- Saving test ---
-    save_array = [switch_data, and_data, on_spikes, oc_data]
+    save_array = [switch_data, and_data, all_spikes, oc_data]
     test_name = os.path.basename(__file__).split('.')[0]
 
     cwd = os.getcwd()

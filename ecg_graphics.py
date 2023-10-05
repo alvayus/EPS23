@@ -2,26 +2,26 @@ import wfdb
 import matplotlib.pyplot as plt
 import numpy as np
 
-n_secs = 2
+n_secs = 5
 freq = 360
 
-record = wfdb.rdrecord('data/100', sampto=n_secs*freq)
-ann = wfdb.rdann('data/100', 'atr', sampto=n_secs*freq)
-wfdb.plot_wfdb(record, annotation = ann)
+#record = wfdb.rdrecord('data/212', sampto=n_secs*freq)
+#ann = wfdb.rdann('data/212', 'atr', sampto=n_secs*freq)
+#wfdb.plot_wfdb(record, annotation = ann)
 
 # Read sample
-signals, fields = wfdb.rdsamp('data/100', sampto=n_secs*freq)
+signals, fields = wfdb.rdsamp('data/232', sampto=n_secs*freq)
 
 # Delta modulator
-v5 = signals[:,1]
+mlii = signals[:, 0]
 
 dc = 0
-delta = 0.01
+delta = 0.03
 on_spikes = []
 off_spikes = []
 
-for i in range(len(v5)):
-    current_sample = v5[i]
+for i in range(len(mlii)):
+    current_sample = mlii[i]
 
     if current_sample > dc + delta:
         dc = current_sample
@@ -35,11 +35,11 @@ for i in range(len(v5)):
         time = i / freq  # Extract current time
         off_spikes.append(time)
 
-plot_v5 = []
-for i in range(len(v5)):
-    plot_v5.append([i / freq, v5[i]])
-plot_v5 = np.array(plot_v5)
-min_mlii = min(v5)
+plot_mlii = []
+for i in range(len(mlii)):
+    plot_mlii.append([i / freq, mlii[i]])
+plot_mlii = np.array(plot_mlii)
+min_mlii = min(mlii)
 
 # Plots
 plt.rcParams['figure.dpi'] = 100
@@ -49,10 +49,10 @@ plt.rcParams["figure.figsize"] = (12, 6)
 fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
 fig.suptitle('ECG representation')
 
-axs[0].plot(plot_v5[:, 0], plot_v5[:, 1])
+axs[0].plot(plot_mlii[:, 0], plot_mlii[:, 1])
 axs[0].set_xlim([0, n_secs])
 axs[0].set_xlabel('Time (s)')
-axs[0].set_ylabel('V5 (mV)')
+axs[0].set_ylabel('MLII (mV)')
 
 axs[1].plot(on_spikes, [2] * len(on_spikes), marker='|', linestyle=None, color='teal')
 axs[1].plot(off_spikes, [1] * len(off_spikes), marker='|', linestyle=None, color='palevioletred')
