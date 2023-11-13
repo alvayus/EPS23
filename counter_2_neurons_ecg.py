@@ -13,7 +13,7 @@ oc_params = {"cm": 1.0, "tau_m": 10.0, "tau_refrac": 75.0, "tau_syn_E": 40.0, "v
 
 if __name__ == '__main__':
     # Read sample
-    n_secs = 5
+    n_secs = 3
     global_params["sim_time"] = float(n_secs * 1000)
     freq = 360
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     wfdb.plot_wfdb(record, annotation=ann)'''
 
     # Carga de los datos
-    signals, fields = wfdb.rdsamp('data/232', sampto=n_secs * freq)
+    signals, fields = wfdb.rdsamp('data/117', sampto=int(n_secs * freq))
 
     # Delta modulator
     mlii = signals[:, 0]
@@ -154,18 +154,18 @@ if __name__ == '__main__':
     # --- Saving plot ---
     plt.rcParams['figure.dpi'] = 400
     plt.rcParams['font.size'] = '4'
-    plt.rcParams["figure.figsize"] = (4, 2)
+    plt.rcParams["figure.figsize"] = (4, 1.5)
 
-    fig, axs = plt.subplots(3, 1, gridspec_kw={'height_ratios': [2, 5, 1]})
-    fig.suptitle('Spiking response')
+    fig, axs = plt.subplots(3, 1, gridspec_kw={'height_ratios': [2, 6, 1]}, sharex=True)
+    #fig.suptitle('Spiking response')
 
     # Overflow counter
     axs[0].plot(oc_data[0].spiketrains[0], [0] * len(oc_data[0].spiketrains[0]), 'o', markersize=0.5, color='darkmagenta')
     axs[0].plot(oc_data[1].spiketrains[0], [1] * len(oc_data[1].spiketrains[0]), 'o', markersize=0.5, color='palevioletred')
     axs[0].set_xlim([0, global_params["sim_time"]])
     axs[0].set_ylim([-1, 2])
-    axs[0].set_yticks([0, 1], labels=["OC", "OC adj."])
-    axs[0].set_xlabel('Time (ms)')
+    axs[0].set_yticks([0, 1], labels=["CO", "FO"])  # Counter output, Filter output
+    #axs[0].set_xlabel('Time (ms)')
 
     # Counter neurons
     n_id = 0
@@ -178,16 +178,16 @@ if __name__ == '__main__':
     axs[1].set_xlim([0, global_params["sim_time"]])
     axs[1].set_ylim([-1, 3 * n_bits])
     axs[1].set_yticks(range(0, 3 * n_bits, 3))
-    axs[1].set_xlabel('Time (ms)')
-    axs[1].set_ylabel('Neurons\n(Counter)')
+    #axs[1].set_xlabel('Time (ms)')
+    axs[1].set_ylabel('Neuron IDs')
 
     # Inputs
     axs[2].plot(all_spikes, [0] * len(all_spikes), 'o', markersize=0.5, color='orange')
     axs[2].set_xlim([0, global_params["sim_time"]])
     axs[2].set_ylim([-1, 1])
-    axs[2].set_yticks([0])
+    axs[2].set_yticks([0], labels=[""])
     axs[2].set_xlabel('Time (ms)')
-    axs[2].set_ylabel('Neurons\n(Spike generator)')
+    axs[2].set_ylabel('Input')
 
     plt.tight_layout()
     plt.savefig("experiments/" + filename + '.png', transparent=False, facecolor='white', edgecolor='black')

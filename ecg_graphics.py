@@ -2,7 +2,7 @@ import wfdb
 import matplotlib.pyplot as plt
 import numpy as np
 
-n_secs = 5
+n_secs = 3
 freq = 360
 
 #record = wfdb.rdrecord('data/212', sampto=n_secs*freq)
@@ -10,7 +10,7 @@ freq = 360
 #wfdb.plot_wfdb(record, annotation = ann)
 
 # Read sample
-signals, fields = wfdb.rdsamp('data/232', sampto=n_secs*freq)
+signals, fields = wfdb.rdsamp('data/117', sampto=int(n_secs*freq))
 
 # Delta modulator
 mlii = signals[:, 0]
@@ -46,12 +46,12 @@ plt.rcParams['figure.dpi'] = 100
 plt.rcParams['font.size'] = '12'
 plt.rcParams["figure.figsize"] = (12, 6)
 
-fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
+fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
 fig.suptitle('ECG representation')
 
 axs[0].plot(plot_mlii[:, 0], plot_mlii[:, 1])
 axs[0].set_xlim([0, n_secs])
-axs[0].set_xlabel('Time (s)')
+#axs[0].set_xlabel('Time (s)')
 axs[0].set_ylabel('MLII (mV)')
 
 axs[1].plot(on_spikes, [2] * len(on_spikes), marker='|', linestyle=None, color='teal')
