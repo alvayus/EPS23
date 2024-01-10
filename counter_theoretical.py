@@ -27,9 +27,9 @@ if __name__ == '__main__':
     # --- Saving plot ---
     plt.rcParams['figure.dpi'] = 400
     plt.rcParams['font.size'] = '4'
-    plt.rcParams["figure.figsize"] = (4, 0.9)
+    plt.rcParams["figure.figsize"] = (4, 0.8)
 
-    fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [4, 1]}, sharex=True)
+    fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
     #fig.suptitle('Spiking response')
 
     # Spikes

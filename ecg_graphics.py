@@ -44,7 +44,7 @@ min_mlii = min(mlii)
 # Plots
 plt.rcParams['figure.dpi'] = 100
 plt.rcParams['font.size'] = '12'
-plt.rcParams["figure.figsize"] = (12, 6)
+plt.rcParams["figure.figsize"] = (12, 3.5)
 
 fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
 fig.suptitle('ECG representation')
